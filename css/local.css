@@ -1,0 +1,30 @@
+.LEFTCOL {
+    float:left; width:50%
+}
+
+.RIGHTCOL {
+    float:right; width:50%
+}
+
+/* .reveal pre code { */
+/*     max-width: none; */
+/*     max-height: none; */
+/*     display: inline; */
+/*     padding: 0px; */
+/* } */
+
+/* .reveal div.org-src-container pre { */
+/*     box-sizing: border-box; */
+/*     padding: 10px; */
+/*     padding-left: 20px; */
+/* } */
+
+.LARGE_SRC {
+    max-width: none;
+    max-height: none;
+    font-size: 0.80em;
+}
+
+.reveal blockquote {
+    text-align: end;
+}

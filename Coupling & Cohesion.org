@@ -1,0 +1,583 @@
+#+REVEAL_ROOT: https://cdn.jsdelivr.net/npm/reveal.js
+#+REVEAL_EXTRA_CSS: ./css/ember.css
+#+REVEAL_EXTRA_CSS: ./css/local.css
+#+REVEAL_THEME: none
+#+REVEAL_TRANS: fade
+#+REVEAL_DEFAULT_FRAG_STYLE: roll-in
+#+REVEAL_PLUGINS: (notes highlight)
+#+REVEAL_HIGHLIGHT_CSS: https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/styles/androidstudio.min.css
+#+REVEAL_DEFAULT_FRAG_STYLE: roll-in
+#+OPTIONS: toc:nil num:nil reveal_slide_number:nil author:nil date:nil timestamp:nil
+#+REVEAL_INIT_OPTIONS: reveal_width:1200 reveal_height:800 navigationMode:linear
+#+REVEAL_HLEVEL: 0
+
+#+BEGIN_NOTES
+ +HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://gongzhitaao.org/orgcss/org.css"/>
+#+END_NOTES
+
+#+TITLE: Coupling & Cohesion
+
+* Coupling & Cohesion
+  :PROPERTIES:
+  :HTML_HEADLINE_CLASS: hidden
+  :END:
+#+BEGIN_NOTES
+В основе разработки программного обсеспечение лежит управление сложностью. Добавляя новую функциональность в систему мы неизбежно увеличиваем ее сложность. Но правильные подходы к разработке и хорошо построенная архитектура может замедлить рост сложности.
+Проблема только в том, что никто не знает как она должна выглядеть, эта хорошо построенная архитектура.
+Но существуют метрики, которые помогают нам оценить архитектуру, о двух таких метриках я бы и хотел поговорить
+#+END_NOTES
+
+ * *Coupling (Связанность)* \\
+   насколько сильно связаны друг с другом отдельные модули.
+ * *Cohesion (Сочетаемость)* \\
+   насколько сильны связи внутри модуля.
+
+#+BEGIN_NOTES
+Используя этим метрики можно анализировать не только архитектуру отдельного приложения, но и целых систем, состоящих из многих сервисов, поэтому в определении используется слово модуль.
+Сами термины были введены Ларри Константином в конце 60-ых годов, позже в 1974 детально описаны в его книге Structured Design.
+Считается, что хорошо спроектированная система обладает низкой связанностью и высокой сочетаемостью (Low coupling & High cohesion).
+#+END_NOTES
+
+#+REVEAL: split
+#+ATTR_HTML: :width 60%
+[[file:./img/CouplingVsCohesion.png]]
+
+* Coupling
+#+BEGIN_NOTES
+Сначала поговорим о связанности, метрике, которая показывает насколько сильна связь между двумя модулями. Чем сильнее связанны модули, чем больше самих связей между ними,  тем вероятнее, что изменения в одном из них затронут остальные. Высокий уровень связанности усложняет рефакторнинг и доработку кода.
+Рассмотрим какие бывают типы связей в порядке от самых сильных к слабым.
+#+END_NOTES
+** Content Coupling
+:PROPERTIES:
+:REVEAL_EXTRA_ATTR: data-auto-animate
+:END:
+Возникает, когда один модуль полагается на внутренние особенности реализации другого модуля.
+
+#+BEGIN_NOTES
+Связанность по содержимому является наруешнием принципа инкапсуляции. Изменение имплементации одного модуля приведет к переписыванию другого.
+Пример content coupling:
+#+END_NOTES
+
+#+REVEAL: split data-auto-animate
+
+#+ATTR_REVEAL: :code_attribs  data-line-numbers
+#+ATTR_HTML: :data-id 96421ed6-ea95-474f-b318-6ada909a1ebe
+#+begin_src java
+public class ShopService {
+
+  public void addNewItem(Order order, OrderItem newItem) {
+    order.getItems().add(newItem);
+    order.setSum(order.getSum() + newItem.getPrice());
+  }
+}
+#+end_src
+#+BEGIN_NOTES
+Этот код зависит от внутреннего строения класса =Order=. Если мы захотим поменять тип списка товаров =items= внутри =Order= или, например, сумму в виде числа заменить классом =Money=, то это приведет к рефакторингу функции =addNewItem= и всех остальных мест, где используется класс =Order=.
+Так же в этой функции мы делаем предположение о связях между полями внутри самого класса =Order=, что при добавлении нового продукта необходимо добавить его стоимость к сумме.
+Поскольку метод =setSum= публичный, то его можно вызвать из любого места приложения, и значит в каждом из этих мест мы должны проверять, что правильно рассчитали сумму. Если же алгоритм расчета суммы меняется - все становится еще хуже.
+
+Вместо этого модули должны обращаться друг к другу только через интерфейс. Уберем всю логику по добавлению нового товара в класс =Order=, чтобы избавится от content coupling:
+#+END_NOTES
+
+#+REVEAL: split data-auto-animate
+
+#+ATTR_REVEAL: :code_attribs  data-line-numbers
+#+ATTR_HTML: :data-id 96421ed6-ea95-474f-b318-6ada909a1ebe
+#+begin_src java
+public class OrderService {
+
+  public void addNewItem(Order order, OrderItem newItem) {
+    order.addItem(newItem);
+  }
+}
+#+end_src
+#+BEGIN_NOTES
+Теперь класс =OrderService= не зависит от внутреннего строения класса =Order=. Класс =Order= проще тестировать и переиспользовать в других местах, так как вся логика инкапсулирована в методе =addItem= и сам класс заботится о выполнении всех бизнес правил, описывающих его возможные состояния. Меняя внутреннюю структуру класса =Order= нам не придется переписывать код, который использует этот класс.
+Можно сказать, что при данном рефакторинге мы последовали закону Деметры, или принципу наименьшего знания, как его иногда называют.
+#+END_NOTES
+
+*** Law of Demeter
+Объект должен иметь как можно меньше представления о структуре и свойствах другого объекта.
+#+BEGIN_NOTES
+Закон Деметры был сформулирован в 1987 году, он служит для уменьшения связанность между компонентами системы. В языках где для доступа к вложенным структурам используется точка можно упростить его до правила одной точки.
+#+END_NOTES
+#+REVEAL: split
+#+ATTR_HTML: :width 60%
+[[./img/demeter-law.png]]
+
+** Common Coupling
+Возникает между модулями, когда они работают с общими данными читая и изменяя их.
+#+BEGIN_NOTES
+Например, два класса модифицируют одну глобальную переменную или  два сервиса пишут в одну и ту же таблицу в БД.
+При наличае common coupling становится сложно проследить, почему значение разделяемого ресурса стало именно таким, так как оно может поменяться в любой момент и из разных мест. Это может привести к трудно отлавливаемым ошибкам. Также, при внесении изменений в структуру разделяемого ресурса, придется менять все работающие с ним модули.
+Модули работающие с глобальными переменными практически не пригодны к переиспользованию.
+
+Важно обратить внимание, что проблемы от такого вида связанности возникают в случае, если оба модуля ИЗМЕНЯЮТ общие данные. Если же в качестве общих данных глобальный набор констант или меняет общий ресурс один модуль, а остальные только читают, то такой вид связанности обычно менее болезненный.
+
+На практике такой вид связанности возникает не часто, так как в сознание разработчиков на старте карьеры закладывают убеждение, что глобальные переменные - это плохо, а БД у каждого микросервиса должна быть своя.
+#+END_NOTES
+
+#+begin_src plantuml :file ./img/common-coupling-ex1.png :cache yes
+@startuml
+object "Объект 1" as o1
+object "Объект 2" as o2
+object "Глобальная переменная" as data
+
+data <|-- o1
+data <|-- o2
+@enduml
+#+end_src
+
+#+ATTR_HTML: :width 30%
+#+RESULTS[119215b766ead0d1063aaaed5ced396c52e08129]:
+[[file:./img/common-coupling-ex1.png]]
+
+** Control Coupling
+Возникает, когда один модуль управляет поведением другого, через передачу каких-то данных или флагов управления.
+#+REVEAL: split
+#+BEGIN_NOTES
+Например:
+#+END_NOTES
+#+begin_src java
+class OrderService {
+  private ReportService reportService;
+
+  public void placeOrder() {
+    // ...
+    if (customer.isPerson()) {
+      report = reportService.buildReport(orderData, ReportType.PDF);
+    } else {
+      report = reportService.buildReport(orderData, ReportType.XML);
+    }
+  }
+}
+#+end_src
+
+#+begin_src java
+class ReportService {
+
+  public byte[] buildReport(ReportData data, ReportType type) {
+    switch (type) {
+        case XML:
+            return buildXmlReport(data);
+        case PDF:
+            return buildPdfReport(data);
+    }
+  }
+
+  private void buildXmlReport() { ... }
+  private void buildPdfReport() { ... }
+}
+#+end_src
+
+#+REVEAL: split
+#+BEGIN_NOTES
+Можно сказать, что в классе ReportService представлены несколько имплементаций метода buildReport. Часто в таких классах большое количество зависимостей, часть из которых нужна только для первого алгоритма, а другая часть только для второго, что будет доставлять неудобства при тестировании.
+OrderService в этой ситуации выступает как координатор, он говорит что необходимо сделать и какой результат он ожидает.
+В ООП объекты должны сами принимать решения, в зависимости от входных аргументов или внутреннего состояния.
+Control coupling в этом примере можно убрать используя полиморфизм и паттерн фабрика. Каждый алгоритм из draw переносим в отдельный класс.
+#+END_NOTES
+
+
+#+begin_src java
+class OrderService {
+
+  public void placeOrder() {
+    // ...
+
+    ReportBuilder reportBuilder = ReportBuilderFactory.getReportBuilder(customer);
+    byte[] report = reportBuilder.build(orderData);
+  }
+}
+
+public interface ReportBuilder {
+    byte[] build();
+}
+
+public class XmlReportBuilder implements ReportBuilder {  }
+public class PdfReportBuilder implements ReportBuilder {  }
+#+end_src
+
+#+BEGIN_NOTES
+Таким образом мы изолировали каждый алгоритм в отдельном классе, что гораздо удобнее с точки зрения тестирования и понимания кода. Добавление новых типов отчетов не потребует изменения класса OrderService. И мы можем отдельно протестировать алгоритм выбора типа отчета в ReportBuilderFactory.
+
+Так же control coupling можно избежать передавая не флаги управления, которые говорят, что нужно сделать. А некий объект-контекст, описывающие ситуацию, на основании которого сам модуль может приянть решение что ему делать.
+#+END_NOTES
+
+#+REVEAL: split
+#+BEGIN_NOTES
+Как один из примеров control coupling часто встречаются методы, принимающие boolean флаги, котрые определяют их поведение. Например:
+#+END_NOTES
+#+begin_src java
+  orderRepository.save(order, true);
+#+end_src
+
+#+BEGIN_NOTES
+Помимо связанности тут еще присутствует проблема boolean blindness. Догадаться что означает этот true без чтения кода orderRepository абсолютно невозможно. В данном случае можно просто разделить метод на два:
+#+END_NOTES
+#+attr_reveal: :frag (roll-in)
+#+begin_src java
+  orderRepository.saveWithValidation(order);
+#+end_src
+** Stamp Coupling
+#+BEGIN_NOTES
+Когда несколько модулей используют одну и ту же структуру, но каждый использует только определенные ее части, то между модулями возникает stamp coupling. Например:
+#+END_NOTES
+
+#+begin_src java
+class CustomerService {
+    private ValidatorService validatorService;
+
+    public void register(Customer customer) {
+        validatorService.validateEmail(customer);
+        //...
+    }
+}
+
+class ValidatorService {
+
+    public boolean validateEmail(Customer customer) {
+        Matcher matcher = EMAIL_REGEX.matcher(customer.getEmail());
+        return matcher.find();
+    }
+}
+
+class Customer {
+    private String firstName;
+    private String lastName;
+    private LocalDate birthDate;
+    private String livingAddress;
+    private String email;
+}
+
+#+end_src
+#+BEGIN_NOTES
+В примере видно, что в функцию validateEmail передается вся структура Customer, хотя реально из нее используется только одно поле. Такой вид связанности несет сразу несколько проблем.
+
+Страдает читбельность, без чтения кода только по сигнатуре функции невозможно понять, какие поля структуры в ней используются.
+Функцию validateEmail сложно переиспользовать, так как при вызове необходимо передавать всю структуру Customer в качестве аргумента. По этой же причине ее функцию сложно тестировать.
+
+Иногда такой подход приводит к превращению класса Customer в свалку не связанных между собой данных, для того чтобы удоволетворить сразу несколько подобных методов.
+
+Пример выше можно переписать следующем образом:
+#+END_NOTES
+
+#+REVEAL: split
+#+begin_src java
+class ValidatorService {
+
+    public boolean validateEmail(String email) {
+        Matcher matcher = EMAIL_REGEX.matcher(email);
+        return matcher.find();
+    }
+}
+#+end_src
+#+BEGIN_NOTES
+Так мы переделали stamp coupling в data coupling.
+#+END_NOTES
+** Data Coupling
+#+BEGIN_NOTES
+Этот вид связи возникает, когда один модуль передает данные в другой в виде параметров вызова функции. В отличае от stamp coupling передаются только необходимые данные. Если передается структура, то принимающий модуль должен использовать все ее поля.
+Data Coupling считается слабой связью к которой следует стремиться.
+#+END_NOTES
+** Message coupling
+#+BEGIN_NOTES
+Модули общаются только через передачу сообщений или вызовы методов без параметров. Модули могут обмениваться сообщениями как внутри одного приложения, используя фреймворки вроде akka так и используя внешнее ПО вроде Kafka или RabbitMQ.
+#+END_NOTES
+
+* Cohesion
+#+BEGIN_NOTES
+Сочетаемость (cohesion) — мера того, насколько функционально взаимосвязанны компоненты внутри модуля (сервиса, класса, функции). Насколько элементы внутри модуля нуждаются друг в друге.
+Низкая сочетаемость внутри модуля означает, что он решает много не связанных друг с другом задач. Высокая сочетаемость означает, что весь код внутри модуля сфокусирован на решении одной конкретной задачи.
+
+Это чем-то похоже на принцип единства ответственности (SPR) из SOLID, сформулированный Робертом Мартином. Принцип гласит, что класс должен иметь только одну причину для изменения.
+Считается, что в хорошо спроектированной программе присутствует сильная сочетаемость внутри модулей.
+Рассмотрим некоторые виды сочетаемости в порядке от самых слабых к сильным.
+#+END_NOTES
+** Coincidental cohesion
+#+BEGIN_NOTES
+Слабейший из видов связанности. Когда элементы внутри модуля собраны по случайному принципу и никак друг с другом не связаны. Часто возникает в класах или пакетах со словом utils в названии.
+#+END_NOTES
+** Logical cohesion
+#+BEGIN_NOTES
+Логическая сочетаемость. Возникает, когда части модуля логически делают похожие вещи, но никак друг с другом не связаны с точки зрения бизнес смысла.
+До этого мы в качестве модуля рассматривали классы. Для иллюстрации логической сочетаемости давайте поднимимся на уровень пакетов.
+#+END_NOTES
+
+#+REVEAL: split
+#+BEGIN_LEFTCOL
+#+BEGIN_EXAMPLE
+|-- dao
+|-- service
+|-- model
+`-- Application.java
+#+END_EXAMPLE
+#+END_LEFTCOL
+#+BEGIN_NOTES
+Как часто открывая новый проект мы видим такую схему проектов? Вы можете сказать что делает этот сервис? 
+#+END_NOTES
+
+#+REVEAL: split
+#+BEGIN_LEFTCOL
+#+BEGIN_EXAMPLE
+|-- dao
+|   |-- OrderDao.java
+|   |-- UserDao.java
+|   `-- PostDao.java
+|-- service
+|   |-- User.java
+|   |-- OrderService.java
+|   `-- UserService.java
+`-- model
+    |-- Order.java
+    |-- OrderItem.java
+    |-- OrderState.java
+    |-- Comment.java
+    `-- Post.java
+#+END_EXAMPLE
+#+END_LEFTCOL
+
+#+attr_reveal: :frag (roll-in)
+#+BEGIN_RIGHTCOL
+#+BEGIN_EXAMPLE
+|-- orders
+|   |-- Order.java
+|   |-- OrderItem.java
+|   |-- OrderState.java
+|   |-- OrderDao.java
+|   `-- OrderService.java
+|-- users
+|   |-- User.java
+|   |-- UserDao.java
+|   `-- UserService.java
+`-- reviews
+    |-- Post.java
+    |-- Comment.java
+    `-- PostDao.java
+#+END_EXAMPLE
+#+END_RIGHTCOL
+
+#+BEGIN_NOTES
+Слева мы видим, что присутствует сильная связанность между пакетами (OrderService наверняка использует Order, OrderItem и OrderDao). И низкая сочетаемость внутри пакетов, между OrderDao и UserDao есть только логическая сочетаемость, оба класса реализуют доступ к БД, но при этом больше у них нет ничего общего. Функционально это разные области.
+
+Деление классов на пакеты исходя из их функционального смысла лучше, так как такой код проще читать и поддерживать.
+В 2011 году Роберт Мартин (Дядя Боб) ввел в обиход термин "Кричащая Архитектура". Он утверждал, что сама архитектура приложения должна кричать о том какую функцию выполняет систем. Организация модулей слева же "кричит" только о паттернах, которые мы используем, но разве это так важно?
+
+Конечно, в маленьком сервисе, состоящем из десятка классов все это не играет большой роли. Маленькие утилиты или небольшие сервисы вообще можно писать как угодно, пока весь их код свободно умещается в голове.
+Попытки использовать в таких системах паттерны и подходы, призванные бороться со сложностью, наоборот приводят только к ее росту.
+#+END_NOTES
+
+
+#+REVEAL: split
+#+BEGIN_NOTES
+На уровне класса можно привести следующий пример логической сочетаемости, которую часто можно встретить в коде:
+#+END_NOTES
+#+begin_src java
+public MessageSenderService {
+
+    public void sendOrderProcessedEvent() { ... }
+    public void sendReportMessage() { ... }
+    public void sendEmailNotification() { ... }
+}
+#+end_src
+#+BEGIN_NOTES
+Единственное, что связывает методы в этом классе, это то что все они отправляют сообщения в некую очередь и больше ничего. Почему именно это становится причиной для объединения методов в один класс - не понятно.
+#+END_NOTES
+
+** Temporal cohesion
+#+BEGIN_NOTES
+Элементы группируются в одном модуле так как вызываются в одно время, в произвольном порядке, но функционально никак друг с другом не связаны. Часто такой тип сочетаемости появляются у функций инициализации, собранных в одном классе. Например:
+#+END_NOTES
+#+attr_reveal: :frag (roll-in)
+#+begin_src java
+public interface ApplicationInitializer {
+    void initDatabase();
+    void initPrinterService();
+    void initFtpSerivce();
+}
+#+end_src
+#+BEGIN_NOTES
+Низкая сочетаемость этих методов друг с другом и сильная связанность с другими модулями приводит к проблемам с переиспользованием данного кода. Мы не можем использовать функции модуля FTP, если перед этим не подключили модуль ApplicationInitializer и не вызвали процедуру initFtpSerivce() из него.
+В качестве возможного рефакторинга стоит вынести каждую функцию инициализации в отдельный модуль и запускать ее при инициализации самого модуля.
+#+END_NOTES
+** Procedural cohesion
+#+BEGIN_NOTES
+Процедурная сочетаемость. Похожа на временную сочетаемость, но с дополнительным ограничением, что порядок вызова функций имеет значение. Например:
+#+END_NOTES
+#+begin_src java
+public class RegistrationService {
+
+    public void registerUser(String email) {
+        validateEmail(email);
+        User user = createNewUser(email);
+        loadProfileFromFacebook(user);
+        checkVipStatus(user);
+        sendGreetings(user);
+    }
+}
+
+public interface UserService {
+    void validateEmail(String email);
+    User createNewUser(String email);
+    void loadProfileFromFacebook(User user);
+    void checkVipStatus(User user);
+    void sendGreetings(User user);
+}
+#+end_src
+#+BEGIN_NOTES
+//TODO поправить стиль
+
+Процедуры в классе UserService имеют процедурную сочетаемость. Последовательность вызовов процедур этого класса должна сохраняться, мы же не хотим зарегистрировать пользователя с невалидным email или послать ему приветствие до того как получили его профиль на Фейсбуке. Из за этого пользоваться таким классом крайне неудобно, а код, который его использует сложно поддается рефакторингу.
+
+Глядя на эту процедуру registerUser сложно сказать, каким должен быть объект user перед вызовом очередной процедуры, или что в нем поменяется после вызова. А изменение порядка вызова может сломать весь алгоритм. Поддержка такого кода требует от программиста полной концентрации и внимания, любое неосторожное движение приведет к возникновению ошибки.
+
+К сожалению, такой код встречается крайне часто и обладает всеми недостатками процедурного программирования.
+
+В мире функционального программирования очень популярен подход "делайте неправильные состояния невозможными". Если какие-то состояния в вашей программе не имеют смысла напишите код так, чтобы приложение никогда не могло попасть в это состояние. Гарантированно можно это сделать только при помощи компилятора.
+
+Но в процедурном подходе вы не можете этого сделать. Как мы можем защититься от того, что кто-то вызовет процедуру checkVipStatus() с незаполненным до конца объектом user? Или вызовет createNewUser с невалидным email? Все что нам остается это написать побольше документации, тестов и надеяться, что этого будет достаточно.
+
+Давайте посмотрим, как мы можем переписать пример выше, чтобы сделать этот код более устойчивым к ошибкам. Следующие виды связанности считаются одинаково предпочтительными
+#+END_NOTES
+** Sequential cohesion
+#+BEGIN_NOTES
+Сочетаемость по последовательности действий. Возникает в случае если результат работы одной части модуля является исходными данными для другой. Пример sequential cohesion:
+#+END_NOTES
+#+attr_reveal: :frag (roll-in)
+#+begin_src java
+public class RegistrationService {
+
+    public void registerUser(String emailStr) {
+        Email email = validateEmail(emailStr);
+        User user = createNewUser(email);
+        UserProfile profile = loadProfileFromFacebook(user);
+        VipStatus vipStatus = checkVipStatus(user);
+        sendGreetings(profile, vipStatus);
+    }
+}
+
+public interface UserService {
+    Email validateEmail(String email);
+    User createNewUser(Email email);
+    UserProfile loadProfileFromFacebook(User user);
+    VipStatus checkVipStatus(User user);
+    void sendGreetings(UserProfile profile, VipStatus vipStatus);
+}
+#+end_src
+#+BEGIN_NOTES
+В данном случае последовательность вызовов функций не имеет значения, так как благодаря системе типов и компилятору мы просто не сможем, например, вызывать функцию save до получения профиля или проверки VIP статуса.
+#+END_NOTES
+** Communication cohesion
+#+BEGIN_NOTES
+Сочетаемость по взаимодействию возникает, когда группируется в один модуль все функции, которые работают с одними и теми же входными или выходными данными. Например:
+#+END_NOTES
+#+attr_reveal: :frag (roll-in)
+#+begin_src java
+interface OrderService {
+    public void addItem(Order order, Item item);
+    public void deleteAllItems(Order order);
+    public Money calculateTotalSum(Order order);
+    public void startDelivery(Order order);
+}
+#+end_src
+
+#+REVEAL: split
+#+begin_src java
+interface ComputerFactory {
+    public Computer newServer(Integer ram, Integer hdd, Integer cpu);
+    public Computer newPc(Monitor monitor, Mouse mouse, SystemUnit unit);
+    public Computer newNotebook(Model model);
+}
+#+end_src
+#+REVEAL: split
+#+BEGIN_NOTES
+Подобные классы сосредоточены на операциях, которые можно произвести над сущностью или на разных способах как получить сущность. Их достаточно легко переиспользовать целиком в разных частях программы. Также примером сочетаемости по взаимодействию можно считать классы в ООП, так как они по определению представляют из себя набор данных и функций, которые с ними работают.
+#+END_NOTES
+#+begin_src java
+class User {
+    private Long id;
+    private Image avatar;
+    private String email;
+    private List<Orders> orders;
+    private List<Review> reviews;
+
+    public void changeAvatar(Image image) { ... }
+    public void resetPassword() { ... }
+    public void placeNewOrder(Order order) { ... }
+    public void postReview(Review review) { ... }
+    public void assignVipStatus() { ... }
+}
+#+end_src
+#+BEGIN_NOTES
+Заметьте, что в приведенном примере у класса нет ни сеттеров, ни геттеров на каждое поле, их вообще в принципе не должно быть в ООП коде. Сеттеры подразумевают, что существует какой-то внешний, по отношению к классу код, который принимает решения на счет данных внутри этого класса, что является нарушением принципа инкапсуляции.
+Несмотря на то, что все функции в классе User работают с одними и теми же данными, все же функционально их можно поделить на несколько областей: управление профилем пользователя, заказами и отзывами. Если в программе эти три области разделены на отдельные модули и имеют четкие границы, то не нужно боятся в каждом модуле сделать свой класс =User= с релевантным набором функций, объединенных только общим идентификатором. Не смотря на то, что физически пользователь один, но в разных контекстах нас могут интерисовать разные его стороны. Не делая такое разделение мы увеличиваем связанность между модулями, которые используют общий класс User. При этом сам класс User становится сложным для понимания и тестирования из за своих размеров.
+#+END_NOTES
+** Functional cohesion
+#+BEGIN_NOTES
+О функциональной сочетаемости можно говорить, когда все части модуля отвечают за какую-то единственную хорошо определенную функцию.
+Давайте рассмотрим как мы можем поделить OrderService согласно функциям, которые он реализует.
+Например, мы можем его поделить на класс, управляющий корзиной, калькулятор и класс отвечающий за доставку.
+#+END_NOTES
+
+#+attr_reveal: :frag (roll-in)
+#+begin_src java
+interface OrderService {
+    public void addItem(Order order, Item item);
+    public void deleteAllItems(Order order);
+    public Money calculateTotalSum(Order order);
+    public void startDelivery(Order order);
+}
+#+end_src
+#+attr_reveal: :frag (roll-in)
+#+begin_src java
+interface OrderCart {
+    public void addItem(Order order, Item item);
+    public void deleteAllItems(Order order);
+}
+
+interface OrderCostCalculator {
+    public Money calculateTotalSum(Order order);
+}
+
+interface OrderDelivery {
+    public void startDelivery(Order order);
+}
+#+end_src
+#+BEGIN_NOTES
+Обратите внимание, за счет этого разделения по функциональности имена наших классов стали более конкретными. И сами классы теперь сфокусированы на исполение ровно одной функции.
+Надо заметить, что такое разделение имеет смысл только если каждый из новых классов используется отдельными потребителем. Иначе, если потребитель OrderService был только один, таким разделением мы только увеличим количество связей в сисеме.
+#+END_NOTES
+* Low coupling & High cohesion
+ * Change one modue without affecting another
+ * Understend one class without reading others
+ * Convenient to reuse
+#+BEGIN_NOTES
+Модули, которые следуют принципам слабой связаности и высокой сочетаемости, обладают следующими свойствами:
+1. Проще изменять, так как чаще всего изменения будут сосредоточены в каком-то одном модуле и менее вероятно, что это зацепит соседние модули.
+2. Проще понимать, потому что все элементы модуля направлены на решение одной задачи и не нужно изучать остальные модули, чтобы понять как она решается.
+3. Проще переиспользовать, так как в модулях них нет ничего лишнего и тот, кто захочет его использовать быстро найдет нужный ему компонент.
+
+Coupling влияет на то, насколько просто нам поменять код, когда нам это нужно. Сколько мест нам нужно поменять и как будут эти изменения распространяться на остальную систему.
+Cohesion влияет на то, как быстро мы можем понять где нам нужно поменять код. Как только находим одно место, которое необходимо поменять есть высокая вероятность, что рядом будут и остальные места, которые нужно изменить.
+#+END_NOTES
+
+#+REVEAL: split
+Design is About Balancing Cohesion and Coupling (not blindly following principles)
+#+BEGIN_NOTES
+Coupling и Cohision всегда упоминают в паре, и это не случайно. На практике это две силы, которые противоречат друг другу. То есть, чтобы создать максимально слабосвязанную систему можно просто поместить весь код в один файл. Нет модулей - нет связй между ними - нет проблем. Но при этом такой код будет обладать слабой сочетаемостью, так как код внутри файла будет решать функционально разные проблемы.
+С другой стороны, чтобы добиться максимального Cohesion нужно выделить каждую функцию в отдельный класс. Но в такой системе будет очень сильный Coupling между такими классами.
+Собственно задача программиста при написанни кода соблюдать баланс между этими двумя понятиями - связанность и сочетаемость.
+#+END_NOTES
+
+#+REVEAL: split
+#+BEGIN_QUOTE
+Сначала художник рисует просто и плохо. Потом сложно и плохо. Потом сложно и хорошо. И только потом просто и хорошо -- Илья Репин
+#+END_QUOTE
+
+* Ссылки
+1. [[https://martinfowler.com/bliki/AnemicDomainModel.html][Anemic Domain Model]]
+2. [[https://enterprisecraftsmanship.com/posts/cohesion-coupling-difference/][Cohesion and Coupling: the difference · Enterprise Craftsmanship]]
+3. [[https://www.youtube.com/watch?v=IcgmSRJHu_8&ab_channel=elm-conf][Making Impossible States Impossible by Richard Feldman - YouTube]]
+4. [[https://www.youtube.com/watch?v=LKtk3HCgTa8&ab_channel=ClojureTV][Simple Made Easy - Rich Hickey (2011) - YouTube]]
+5. [[youtube:NaPFclo-KbA][Microservices without DDD is risky business! - Trond Hjorteland]]
+6. [[https://www.infoworld.com/article/2073649/why-extends-is-evil.html][Why extends is evil | InfoWorld]]
