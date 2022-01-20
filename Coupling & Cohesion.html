@@ -1,0 +1,1101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Coupling &amp; Cohesion</title>
+<meta name="generator" content="Org Mode" />
+<style>
+  #content { max-width: 60em; margin: auto; }
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    padding: 3px;
+    color: #555;
+    background-color: #f2f2f299;
+  }
+  pre.src:hover:before { display: inline; margin-top: 14px;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+</style>
+<link rel="stylesheet" type="text/css" href="./css/local.css" />
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Coupling &amp; Cohesion</h1>
+
+<div id="outline-container-org001f169" class="outline-2">
+<h2 id="org001f169" class="hidden">Coupling &amp; Cohesion</h2>
+<div class="outline-text-2" id="text-org001f169">
+<div class="NOTES" id="orgfab0143">
+<p>
+В основе разработки программного обсеспечение лежит управление сложностью. Добавляя новую функциональность в систему мы неизбежно увеличиваем ее сложность. Но правильные подходы к разработке и хорошо построенная архитектура может замедлить рост сложности.
+Проблема только в том, что никто не знает как она должна выглядеть, эта хорошо построенная архитектура.
+Но существуют метрики, которые помогают нам оценить архитектуру, о двух таких метриках я бы и хотел поговорить
+</p>
+
+</div>
+
+<ul class="org-ul">
+<li><b>Coupling (Связанность)</b> <br />
+насколько сильно связаны друг с другом отдельные модули.</li>
+<li><b>Cohesion (Сочетаемость)</b> <br />
+насколько сильны связи внутри модуля.</li>
+</ul>
+
+<div class="NOTES" id="org5f51fc7">
+<p>
+Используя этим метрики можно анализировать не только архитектуру отдельного приложения, но и целых систем, состоящих из многих сервисов, поэтому в определении используется слово модуль.
+Сами термины были введены Ларри Константином в конце 60-ых годов, позже в 1974 детально описаны в его книге Structured Design.
+Считается, что хорошо спроектированная система обладает низкой связанностью и высокой сочетаемостью (Low coupling &amp; High cohesion).
+</p>
+
+</div>
+
+
+<div id="org3205e7c" class="figure">
+<p><img src="./img/CouplingVsCohesion.png" alt="CouplingVsCohesion.png" width="60%" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org781f516" class="outline-2">
+<h2 id="org781f516">Coupling</h2>
+<div class="outline-text-2" id="text-org781f516">
+<div class="NOTES" id="orgf7bd1af">
+<p>
+Сначала поговорим о связанности, метрике, которая показывает насколько сильна связь между двумя модулями. Чем сильнее связанны модули, чем больше самих связей между ними, тем вероятнее, что изменения в одном из них затронут остальные. Высокий уровень связанности усложняет рефакторнинг и доработку кода.
+Рассмотрим какие бывают типы связей в порядке от самых сильных к слабым.
+</p>
+
+</div>
+</div>
+<div id="outline-container-orgf4e0e1d" class="outline-3">
+<h3 id="orgf4e0e1d">Content Coupling</h3>
+<div class="outline-text-3" id="text-orgf4e0e1d">
+<p>
+Возникает, когда один модуль полагается на внутренние особенности реализации другого модуля.
+</p>
+
+<div class="NOTES" id="orgba48ae5">
+<p>
+Связанность по содержимому является наруешнием принципа инкапсуляции. Изменение имплементации одного модуля приведет к переписыванию другого.
+Пример content coupling:
+</p>
+
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">public</span> <span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">ShopService</span> <span style="color: #51afef;">{</span>
+
+  <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">addNewItem</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span>, <span style="color: #ECBE7B;">OrderItem</span> <span style="color: #dcaeea;">newItem</span><span style="color: #c678dd;">)</span> <span style="color: #c678dd;">{</span>
+    order.getItems<span style="color: #98be65;">()</span>.add<span style="color: #98be65;">(</span>newItem<span style="color: #98be65;">)</span>;
+    order.setSum<span style="color: #98be65;">(</span>order.getSum<span style="color: #a9a1e1;">()</span> + newItem.getPrice<span style="color: #a9a1e1;">()</span><span style="color: #98be65;">)</span>;
+  <span style="color: #c678dd;">}</span>
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+<div class="NOTES" id="org0915476">
+<p>
+Этот код зависит от внутреннего строения класса <code>Order</code>. Если мы захотим поменять тип списка товаров <code>items</code> внутри <code>Order</code> или, например, сумму в виде числа заменить классом <code>Money</code>, то это приведет к рефакторингу функции <code>addNewItem</code> и всех остальных мест, где используется класс <code>Order</code>.
+Так же в этой функции мы делаем предположение о связях между полями внутри самого класса <code>Order</code>, что при добавлении нового продукта необходимо добавить его стоимость к сумме.
+Поскольку метод <code>setSum</code> публичный, то его можно вызвать из любого места приложения, и значит в каждом из этих мест мы должны проверять, что правильно рассчитали сумму. Если же алгоритм расчета суммы меняется - все становится еще хуже.
+</p>
+
+<p>
+Вместо этого модули должны обращаться друг к другу только через интерфейс. Уберем всю логику по добавлению нового товара в класс <code>Order</code>, чтобы избавится от content coupling:
+</p>
+
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">public</span> <span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">OrderService</span> <span style="color: #51afef;">{</span>
+
+  <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">addNewItem</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span>, <span style="color: #ECBE7B;">OrderItem</span> <span style="color: #dcaeea;">newItem</span><span style="color: #c678dd;">)</span> <span style="color: #c678dd;">{</span>
+    order.addItem<span style="color: #98be65;">(</span>newItem<span style="color: #98be65;">)</span>;
+  <span style="color: #c678dd;">}</span>
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+<div class="NOTES" id="orgf2477ea">
+<p>
+Теперь класс <code>OrderService</code> не зависит от внутреннего строения класса <code>Order</code>. Класс <code>Order</code> проще тестировать и переиспользовать в других местах, так как вся логика инкапсулирована в методе <code>addItem</code> и сам класс заботится о выполнении всех бизнес правил, описывающих его возможные состояния. Меняя внутреннюю структуру класса <code>Order</code> нам не придется переписывать код, который использует этот класс.
+Можно сказать, что при данном рефакторинге мы последовали закону Деметры, или принципу наименьшего знания, как его иногда называют.
+</p>
+
+</div>
+</div>
+
+<div id="outline-container-orga543864" class="outline-4">
+<h4 id="orga543864">Law of Demeter</h4>
+<div class="outline-text-4" id="text-orga543864">
+<p>
+Объект должен иметь как можно меньше представления о структуре и свойствах другого объекта.
+</p>
+<div class="NOTES" id="org275c475">
+<p>
+Закон Деметры был сформулирован в 1987 году, он служит для уменьшения связанность между компонентами системы. В языках где для доступа к вложенным структурам используется точка можно упростить его до правила одной точки.
+</p>
+
+</div>
+
+<div id="orgb440e1b" class="figure">
+<p><img src="./img/demeter-law.png" alt="demeter-law.png" width="60%" />
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb774816" class="outline-3">
+<h3 id="orgb774816">Common Coupling</h3>
+<div class="outline-text-3" id="text-orgb774816">
+<p>
+Возникает между модулями, когда они работают с общими данными читая и изменяя их.
+</p>
+<div class="NOTES" id="org44bfe81">
+<p>
+Например, два класса модифицируют одну глобальную переменную или  два сервиса пишут в одну и ту же таблицу в БД.
+При наличае common coupling становится сложно проследить, почему значение разделяемого ресурса стало именно таким, так как оно может поменяться в любой момент и из разных мест. Это может привести к трудно отлавливаемым ошибкам. Также, при внесении изменений в структуру разделяемого ресурса, придется менять все работающие с ним модули.
+Модули работающие с глобальными переменными практически не пригодны к переиспользованию.
+</p>
+
+<p>
+Важно обратить внимание, что проблемы от такого вида связанности возникают в случае, если оба модуля ИЗМЕНЯЮТ общие данные. Если же в качестве общих данных глобальный набор констант или меняет общий ресурс один модуль, а остальные только читают, то такой вид связанности обычно менее болезненный.
+</p>
+
+<p>
+На практике такой вид связанности возникает не часто, так как в сознание разработчиков на старте карьеры закладывают убеждение, что глобальные переменные - это плохо, а БД у каждого микросервиса должна быть своя.
+</p>
+
+</div>
+
+
+<div id="org0f0de19" class="figure">
+<p><img src="./img/common-coupling-ex1.png" alt="common-coupling-ex1.png" width="30%" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org42a4f10" class="outline-3">
+<h3 id="org42a4f10">Control Coupling</h3>
+<div class="outline-text-3" id="text-org42a4f10">
+<p>
+Возникает, когда один модуль управляет поведением другого, через передачу каких-то данных или флагов управления.
+</p>
+
+<div class="NOTES" id="orgdee36ca">
+<p>
+Например:
+</p>
+
+</div>
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">OrderService</span> <span style="color: #51afef;">{</span>
+  <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">ReportBuilder</span> <span style="color: #dcaeea;">reportBuilder</span>;
+
+  <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">placeOrder</span><span style="color: #c678dd;">()</span> <span style="color: #c678dd;">{</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">...</span>
+    <span style="color: #ECBE7B;">byte</span><span style="color: #98be65;">[]</span> <span style="color: #dcaeea;">report</span> = reportBuilder.build<span style="color: #98be65;">(</span>orderData, <span style="color: #a9a1e1;">ReportType</span>.PDF<span style="color: #98be65;">)</span>;
+  <span style="color: #c678dd;">}</span>
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">ReportBuilder</span> <span style="color: #51afef;">{</span>
+
+  <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">byte</span><span style="color: #c678dd;">[]</span> <span style="color: #c678dd;">build</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">ReportData</span> <span style="color: #dcaeea;">data</span>, <span style="color: #ECBE7B;">ReportType</span> <span style="color: #dcaeea;">type</span><span style="color: #c678dd;">)</span> <span style="color: #c678dd;">{</span>
+    <span style="color: #51afef;">switch</span> <span style="color: #98be65;">(</span>type<span style="color: #98be65;">)</span> <span style="color: #98be65;">{</span>
+        <span style="color: #51afef;">case</span> XML:
+            <span style="color: #51afef;">return</span> buildXmlReport<span style="color: #a9a1e1;">(</span>data<span style="color: #a9a1e1;">)</span>;
+        <span style="color: #51afef;">case</span> PDF:
+            <span style="color: #51afef;">return</span> buildPdfReport<span style="color: #a9a1e1;">(</span>data<span style="color: #a9a1e1;">)</span>;
+    <span style="color: #98be65;">}</span>
+  <span style="color: #c678dd;">}</span>
+
+  <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">buildXmlReport</span><span style="color: #c678dd;">()</span> <span style="color: #c678dd;">{</span> ... <span style="color: #c678dd;">}</span>
+  <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">buildPdfReport</span><span style="color: #c678dd;">()</span> <span style="color: #c678dd;">{</span> ... <span style="color: #c678dd;">}</span>
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+
+<div class="NOTES" id="org94ec9c4">
+<p>
+Можно сказать, что в классе <code>ReportBuilder</code> представлены несколько имплементаций метода <code>build</code>. Часто в таких классах большое количество зависимостей, часть из которых нужна только для первого алгоритма, а другая часть только для второго, что будет доставлять неудобства при тестировании.
+<code>OrderService</code> в этой ситуации выступает как координатор, он говорит что необходимо сделать и какой результат он ожидает.
+В ООП объекты должны сами принимать решения, в зависимости от входных аргументов или внутреннего состояния.
+Control coupling в этом примере можно убрать используя полиморфизм и паттерн фабрика. Каждый алгоритм из <code>ReportBuilder</code> переносим в отдельный класс.
+</p>
+
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">OrderService</span> <span style="color: #51afef;">{</span>
+  <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">ReportBuilder</span> <span style="color: #dcaeea;">reportBuilder</span>;
+
+  <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">placeOrder</span><span style="color: #c678dd;">()</span> <span style="color: #c678dd;">{</span>
+    <span style="color: #5B6268;">// </span><span style="color: #5B6268;">...</span>
+    <span style="color: #ECBE7B;">byte</span><span style="color: #98be65;">[]</span> <span style="color: #dcaeea;">report</span> = reportBuilder.build<span style="color: #98be65;">(</span>orderData<span style="color: #98be65;">)</span>;
+  <span style="color: #c678dd;">}</span>
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">public</span> <span style="color: #51afef;">interface</span> <span style="color: #ECBE7B;">ReportBuilder</span> <span style="color: #51afef;">{</span>
+    <span style="color: #ECBE7B;">byte</span><span style="color: #c678dd;">[]</span> <span style="color: #c678dd;">build</span><span style="color: #c678dd;">()</span>;
+<span style="color: #51afef;">}</span>
+
+<span style="color: #51afef;">public</span> <span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">XmlReportBuilder</span> <span style="color: #51afef;">implements</span> <span style="color: #ECBE7B;">ReportBuilder</span> <span style="color: #51afef;">{</span>  <span style="color: #51afef;">}</span>
+<span style="color: #51afef;">public</span> <span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">PdfReportBuilder</span> <span style="color: #51afef;">implements</span> <span style="color: #ECBE7B;">ReportBuilder</span> <span style="color: #51afef;">{</span>  <span style="color: #51afef;">}</span>
+</pre>
+</div>
+
+<div class="NOTES" id="org0abb687">
+<p>
+Таким образом мы изолировали каждый алгоритм в отдельном классе, что гораздо удобнее с точки зрения тестирования и понимания кода. Добавление новых типов отчетов не потребует изменения класса <code>OrderService</code>.
+</p>
+
+<p>
+Так же control coupling можно избежать передавая не флаги управления, которые говорят, что нужно сделать. А некий объект-контекст, описывающие ситуацию, на основании которого сам модуль может приянть решение что ему делать.
+</p>
+
+</div>
+
+<div class="NOTES" id="org0c064f0">
+<p>
+Как один из примеров control coupling часто встречаются методы, принимающие <code>boolean</code> флаги, котрые определяют их поведение.
+Помимо связанности тут еще присутствует проблема <code>boolean blindness</code>. Догадаться что означает этот <code>true</code> без чтения кода метода абсолютно невозможно. В данном случае можно просто разделить метод на два:
+</p>
+
+</div>
+
+
+<div id="org91db829" class="figure">
+<p><img src="./img/control-coupling.png" alt="control-coupling.png" width="60%" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org26d1aed" class="outline-3">
+<h3 id="org26d1aed">Stamp Coupling</h3>
+<div class="outline-text-3" id="text-org26d1aed">
+<p>
+Возникает, когда модули обмениваются друг с другом данными через структуру, но при этом из этой структуры модули используют не все поля.
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">ValidatorService</span> <span style="color: #51afef;">{</span>
+
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">boolean</span> <span style="color: #c678dd;">validateEmail</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Customer</span> <span style="color: #dcaeea;">customer</span><span style="color: #c678dd;">)</span> <span style="color: #c678dd;">{</span>
+        <span style="color: #ECBE7B;">var</span> <span style="color: #dcaeea;">email</span> = customer.getEmail<span style="color: #98be65;">()</span>;
+        <span style="color: #51afef;">return</span> EMAIL_REGEX.matcher<span style="color: #98be65;">(</span>email<span style="color: #98be65;">)</span>.find<span style="color: #98be65;">()</span>;
+    <span style="color: #c678dd;">}</span>
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">Customer</span> <span style="color: #51afef;">{</span>
+    <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">String</span> <span style="color: #dcaeea;">firstName</span>;
+    <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">String</span> <span style="color: #dcaeea;">lastName</span>;
+    <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">LocalDate</span> <span style="color: #dcaeea;">birthDate</span>;
+    <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">String</span> <span style="color: #dcaeea;">livingAddress</span>;
+    <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">String</span> <span style="color: #dcaeea;">email</span>;
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+<div class="NOTES" id="org075b522">
+<p>
+В примере видно, что в функцию <code>validateEmail</code> передается вся структура <code>Customer</code>, хотя реально из нее используется только одно поле. Такой вид связанности несет сразу несколько проблем.
+</p>
+
+<p>
+Страдает читбельность, без чтения кода только по сигнатуре функции невозможно понять, какие поля структуры в ней используются, почему туда передается объект целиком.
+Функцию <code>validateEmail</code> сложно переиспользовать, так как при вызове необходимо передавать всю структуру <code>Customer</code> в качестве аргумента. По этой же причине ее сложно тестировать.
+</p>
+
+<p>
+Иногда такой подход приводит к превращению класса <code>Customer</code> в свалку не связанных между собой данных, для того чтобы удоволетворить сразу несколько подобных методов.
+</p>
+
+<p>
+Пример выше можно переписать следующем образом:
+</p>
+
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">ValidatorService</span> <span style="color: #51afef;">{</span>
+
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">boolean</span> <span style="color: #c678dd;">validateEmail</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">String</span> <span style="color: #dcaeea;">email</span><span style="color: #c678dd;">)</span> <span style="color: #c678dd;">{</span>
+        <span style="color: #51afef;">return</span> EMAIL_REGEX.matcher<span style="color: #98be65;">(</span>email<span style="color: #98be65;">)</span>.find<span style="color: #98be65;">()</span>;
+    <span style="color: #c678dd;">}</span>
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+<div class="NOTES" id="orgad7f34b">
+<p>
+Так мы переделали stamp coupling в data coupling.
+</p>
+
+</div>
+</div>
+</div>
+<div id="outline-container-org73f4f56" class="outline-3">
+<h3 id="org73f4f56">Data Coupling</h3>
+<div class="outline-text-3" id="text-org73f4f56">
+<p>
+Возникает, когда модули обмениваются друг с другом данными через структуру, при этом используется каждое поле в этой структуре.
+</p>
+<div class="NOTES" id="org106791f">
+<p>
+Этот вид связи возникает, когда один модуль передает данные в другой в виде параметров вызова функции. В отличае от stamp coupling передаются только необходимые данные. Если передается структура, то принимающий модуль должен использовать все ее поля.
+Data Coupling считается слабой связью к которой следует стремиться.
+</p>
+
+</div>
+</div>
+</div>
+<div id="outline-container-orgc91b299" class="outline-3">
+<h3 id="orgc91b299">Message coupling</h3>
+<div class="outline-text-3" id="text-orgc91b299">
+<p>
+Модули общаются только через передачу сообщений или вызовы методов без параметров.
+</p>
+<div class="NOTES" id="orgf895ee6">
+<p>
+Модули могут обмениваться сообщениями как внутри одного приложения, используя фреймворки вроде akka так и используя внешнее ПО вроде Kafka или RabbitMQ.
+</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb3267e2" class="outline-2">
+<h2 id="orgb3267e2">Cohesion</h2>
+<div class="outline-text-2" id="text-orgb3267e2">
+<div class="NOTES" id="org3b65190">
+<p>
+Сочетаемость (cohesion) — мера того, насколько функционально взаимосвязанны компоненты внутри модуля (сервиса, класса, функции). Насколько элементы внутри модуля нуждаются друг в друге.
+Низкая сочетаемость внутри модуля означает, что он решает много не связанных друг с другом задач. Высокая сочетаемость означает, что весь код внутри модуля сфокусирован на решении одной конкретной задачи.
+</p>
+
+<p>
+Это чем-то похоже на принцип единства ответственности (SPR) из SOLID, сформулированный Робертом Мартином. Принцип гласит, что класс должен иметь только одну причину для изменения.
+Считается, что в хорошо спроектированной программе присутствует сильная сочетаемость внутри модулей.
+Рассмотрим некоторые виды сочетаемости в порядке от самых слабых к сильным.
+</p>
+
+</div>
+</div>
+<div id="outline-container-org1b760b7" class="outline-3">
+<h3 id="org1b760b7">Coincidental cohesion</h3>
+<div class="outline-text-3" id="text-org1b760b7">
+<p>
+Слабейший из видов связанности. Когда элементы внутри модуля собраны по случайному принципу и никак друг с другом не связаны.
+</p>
+<div class="NOTES" id="org891f9b6">
+<p>
+Часто возникает в класах или пакетах со словом utils в названии.
+</p>
+
+</div>
+</div>
+</div>
+<div id="outline-container-org0e89568" class="outline-3">
+<h3 id="org0e89568">Logical cohesion</h3>
+<div class="outline-text-3" id="text-org0e89568">
+<p>
+Логическая сочетаемость возникает, когда части модуля логически делают похожие вещи, но никак друг с другом не связаны с точки зрения бизнес смысла.
+</p>
+<div class="NOTES" id="orgecca7b4">
+<p>
+До этого мы в качестве модуля рассматривали классы. Для иллюстрации логической сочетаемости давайте поднимимся на уровень пакетов.
+</p>
+
+</div>
+
+<pre class="example" id="org8b20d98">
+  📁 dao
+  📁 service
+  📁 model
+  ☕ Application.java
+</pre>
+<div class="NOTES" id="orgf7076d2">
+<p>
+Как часто открывая новый проект мы видим такую схему проектов? Вы можете сказать что делает этот сервис?
+</p>
+
+</div>
+
+<div class="LEFTCOL" id="org7c10372">
+<pre class="example" id="orgd498515">
+  📁 dao
+    ☕ OrderDao.java
+    ☕ UserDao.java
+    ☕ PostDao.java
+  📁 service
+    ☕ User.java
+    ☕ OrderService.java
+    ☕ UserService.java
+  📁 model
+    ☕ Order.java
+    ☕ OrderItem.java
+    ☕ OrderState.java
+    ☕ Comment.java
+    ☕ Post.java
+</pre>
+
+</div>
+
+<div class="RIGHTCOL" id="orgcb545fb">
+<pre class="example" id="org6c75327">
+  📁 orders
+    ☕ Order.java
+    ☕ OrderItem.java
+    ☕ OrderState.java
+    ☕ OrderDao.java
+    ☕ OrderService.java
+  📁 users
+    ☕ User.java
+    ☕ UserDao.java
+    ☕ UserService.java
+  📁 reviews
+    ☕ Post.java
+    ☕ Comment.java
+    ☕ PostDao.java
+</pre>
+
+</div>
+
+<div class="NOTES" id="orgfa4941f">
+<p>
+Слева мы видим, что присутствует сильная связанность между пакетами (OrderService наверняка использует Order, OrderItem и OrderDao). И низкая сочетаемость внутри пакетов, между OrderDao и UserDao есть только логическая сочетаемость, оба класса реализуют доступ к БД, но при этом больше у них нет ничего общего. Функционально это разные области.
+</p>
+
+<p>
+Деление классов на пакеты исходя из их функционального смысла лучше, так как такой код проще читать и поддерживать.
+В 2011 году Роберт Мартин (Дядя Боб) ввел в обиход термин &ldquo;Кричащая Архитектура&rdquo;. Он утверждал, что сама архитектура приложения должна кричать о том какую функцию выполняет систем. Организация модулей слева же &ldquo;кричит&rdquo; только о паттернах, которые мы используем, но разве это так важно?
+</p>
+
+<p>
+Конечно, в маленьком сервисе, состоящем из десятка классов все это не играет большой роли. Маленькие утилиты или небольшие сервисы вообще можно писать как угодно, пока весь их код свободно умещается в голове.
+Попытки использовать в таких системах паттерны и подходы, призванные бороться со сложностью, наоборот приводят только к ее росту.
+</p>
+
+</div>
+
+<div class="NOTES" id="org30c2bd7">
+<p>
+На уровне класса можно привести следующий пример логической сочетаемости, которую часто можно встретить в коде:
+</p>
+
+</div>
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">MessageSenderService</span> <span style="color: #51afef;">{</span>
+
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">sendOrderProcessedEvent</span><span style="color: #c678dd;">()</span> <span style="color: #c678dd;">{</span> ... <span style="color: #c678dd;">}</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">sendReportMessage</span><span style="color: #c678dd;">()</span> <span style="color: #c678dd;">{</span> ... <span style="color: #c678dd;">}</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">sendEmailNotification</span><span style="color: #c678dd;">()</span> <span style="color: #c678dd;">{</span> ... <span style="color: #c678dd;">}</span>
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+<div class="NOTES" id="org2e7ebf5">
+<p>
+Единственное, что связывает методы в этом классе, это то что все они отправляют сообщения в некую очередь и больше ничего. Почему именно это иногда становится причиной для объединения методов в один класс - сказать сложно. Особенно когда даже нет класса, который бы использовал больше одного из этих методов.
+</p>
+
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc7314c7" class="outline-3">
+<h3 id="orgc7314c7">Temporal cohesion</h3>
+<div class="outline-text-3" id="text-orgc7314c7">
+<p>
+Элементы группируются в одном модуле, так как вызываются в одно время, но функционально никак друг с другом не связаны.
+</p>
+<div class="NOTES" id="org3191256">
+<p>
+Часто такой тип сочетаемости появляются у функций инициализации, собранных в одном классе. Например:
+</p>
+
+</div>
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">public</span> <span style="color: #51afef;">interface</span> <span style="color: #ECBE7B;">ApplicationInitializer</span> <span style="color: #51afef;">{</span>
+    <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">initDatabase</span><span style="color: #c678dd;">()</span>;
+    <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">initPrinterService</span><span style="color: #c678dd;">()</span>;
+    <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">initFtpSerivce</span><span style="color: #c678dd;">()</span>;
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+<div class="NOTES" id="org1dc12f5">
+<p>
+Низкая сочетаемость этих методов друг с другом и сильная связанность с другими модулями приводит к проблемам с переиспользованием данного кода. Мы не можем использовать функции модуля FTP, если перед этим не подключили модуль <code>ApplicationInitializer</code> и не вызвали процедуру <code>initFtpSerivce()</code> из него.
+В качестве возможного рефакторинга стоит вынести каждую функцию инициализации в соответствующий модуль и запускать ее при инициализации самого модуля.
+</p>
+
+</div>
+</div>
+</div>
+<div id="outline-container-org906f9f3" class="outline-3">
+<h3 id="org906f9f3">Procedural cohesion</h3>
+<div class="outline-text-3" id="text-org906f9f3">
+<p>
+Процедурная сочетаемость похожа на временную сочетаемость, но с дополнительным ограничением, что порядок вызова функций имеет значение.
+</p>
+
+<div class="NOTES" id="org2376048">
+<p>
+Например:
+</p>
+
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">public</span> <span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">RegistrationService</span> <span style="color: #51afef;">{</span>
+
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">registerUser</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">String</span> <span style="color: #dcaeea;">email</span><span style="color: #c678dd;">)</span> <span style="color: #c678dd;">{</span>
+        validateEmail<span style="color: #98be65;">(</span>email<span style="color: #98be65;">)</span>;
+        <span style="color: #ECBE7B;">User</span> <span style="color: #dcaeea;">user</span> = createNewUser<span style="color: #98be65;">(</span>email<span style="color: #98be65;">)</span>;
+        loadProfileFromFacebook<span style="color: #98be65;">(</span>user<span style="color: #98be65;">)</span>;
+        checkVipStatus<span style="color: #98be65;">(</span>user<span style="color: #98be65;">)</span>;
+        sendGreetings<span style="color: #98be65;">(</span>user<span style="color: #98be65;">)</span>;
+    <span style="color: #c678dd;">}</span>
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">public</span> <span style="color: #51afef;">interface</span> <span style="color: #ECBE7B;">UserService</span> <span style="color: #51afef;">{</span>
+    <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">validateEmail</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">String</span> <span style="color: #dcaeea;">email</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #ECBE7B;">User</span> <span style="color: #c678dd;">createNewUser</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">String</span> <span style="color: #dcaeea;">email</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">loadProfileFromFacebook</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">User</span> <span style="color: #dcaeea;">user</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">checkVipStatus</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">User</span> <span style="color: #dcaeea;">user</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">sendGreetings</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">User</span> <span style="color: #dcaeea;">user</span><span style="color: #c678dd;">)</span>;
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+<div class="NOTES" id="org2b38bcf">
+<p>
+Последовательность вызовов процедур <code>UserService</code> этого класса должна сохраняться, мы же не хотим зарегистрировать пользователя с невалидным email или послать приветствие до того как получили его профиль на Фейсбуке. Узнать правильный порядок вызова этих процедур можно только полностью изучив код <code>UserService</code>. Из за этого пользоваться таким классом крайне неудобно, а код, который его использует, сложно поддается рефакторингу.
+</p>
+
+<p>
+Глядя на код <code>registerUser</code> сложно сказать, каким должен быть объект <code>user</code> перед вызовом очередной процедуры, или что в нем поменяется после вызова. А изменение порядка вызова процедур может сломать весь алгоритм. Поддержка такого кода требует от программиста полной концентрации и внимания, любое неосторожное движение приведет к возникновению ошибки.
+</p>
+
+<p>
+К сожалению, такой код встречается крайне часто и обладает всеми недостатками процедурного программирования.
+</p>
+
+<p>
+Правильный подход, которого нужно придерживаться, &ldquo;делайте неправильные состояния невозможными&rdquo;. Если какие-то состояния в вашей программе не имеют смысла напишите код так, чтобы приложение никогда не могло попасть в это состояние. Гарантированно можно это сделать только при помощи компилятора. Тесты могут дать нектороую уверенность в коде, но, во-первых, только на множестве входных данных, которое вы сами определили, во-вторых, хорошо разработанные тесты это еще более редкое явление, чем хорошо написанный код.
+</p>
+
+<p>
+Давайте посмотрим, как мы можем переписать пример выше, чтобы сделать этот код более устойчивым к ошибкам. Следующие виды связанности считаются одинаково предпочтительными
+</p>
+
+</div>
+</div>
+</div>
+<div id="outline-container-org20105b3" class="outline-3">
+<h3 id="org20105b3">Sequential cohesion</h3>
+<div class="outline-text-3" id="text-org20105b3">
+<p>
+Сочетаемость по последовательности действий возникает в случае если результат работы одной части модуля является исходными данными для другой.
+</p>
+<div class="NOTES" id="org3a5f6ab">
+<p>
+Пример sequential cohesion:
+</p>
+
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">public</span> <span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">RegistrationService</span> <span style="color: #51afef;">{</span>
+
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">registerUser</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">String</span> <span style="color: #dcaeea;">emailStr</span><span style="color: #c678dd;">)</span> <span style="color: #c678dd;">{</span>
+        <span style="color: #ECBE7B;">Email</span> <span style="color: #dcaeea;">email</span> = validateEmail<span style="color: #98be65;">(</span>emailStr<span style="color: #98be65;">)</span>;
+        <span style="color: #ECBE7B;">User</span> <span style="color: #dcaeea;">user</span> = createNewUser<span style="color: #98be65;">(</span>email<span style="color: #98be65;">)</span>;
+        <span style="color: #ECBE7B;">UserProfile</span> <span style="color: #dcaeea;">profile</span> = loadProfileFromFacebook<span style="color: #98be65;">(</span>user<span style="color: #98be65;">)</span>;
+        <span style="color: #ECBE7B;">VipStatus</span> <span style="color: #dcaeea;">vipStatus</span> = checkVipStatus<span style="color: #98be65;">(</span>user<span style="color: #98be65;">)</span>;
+        sendGreetings<span style="color: #98be65;">(</span>profile, vipStatus<span style="color: #98be65;">)</span>;
+    <span style="color: #c678dd;">}</span>
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">public</span> <span style="color: #51afef;">interface</span> <span style="color: #ECBE7B;">UserService</span> <span style="color: #51afef;">{</span>
+    <span style="color: #ECBE7B;">Email</span> <span style="color: #c678dd;">validateEmail</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">String</span> <span style="color: #dcaeea;">email</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #ECBE7B;">User</span> <span style="color: #c678dd;">createNewUser</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Email</span> <span style="color: #dcaeea;">email</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #ECBE7B;">UserProfile</span> <span style="color: #c678dd;">loadProfileFromFacebook</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">User</span> <span style="color: #dcaeea;">user</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #ECBE7B;">VipStatus</span> <span style="color: #c678dd;">checkVipStatus</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">User</span> <span style="color: #dcaeea;">user</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">sendGreetings</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">UserProfile</span> <span style="color: #dcaeea;">profile</span>, <span style="color: #ECBE7B;">VipStatus</span> <span style="color: #dcaeea;">vipStatus</span><span style="color: #c678dd;">)</span>;
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+<div class="NOTES" id="org797621a">
+<p>
+В данном случае последовательность вызовов функций не имеет значения, так как благодаря системе типов мы просто не сможем, их вызывать в неправильном порядке.
+</p>
+
+</div>
+</div>
+</div>
+<div id="outline-container-orgfb5d4a7" class="outline-3">
+<h3 id="orgfb5d4a7">Communication cohesion</h3>
+<div class="outline-text-3" id="text-orgfb5d4a7">
+<p>
+Сочетаемость по взаимодействию возникает, когда группируется в один модуль все функции, которые работают с одними и теми же входными или выходными данными.
+</p>
+<div class="NOTES" id="org2915e8c">
+<p>
+Например:
+</p>
+
+</div>
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">interface</span> <span style="color: #ECBE7B;">OrderService</span> <span style="color: #51afef;">{</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">addItem</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span>, <span style="color: #ECBE7B;">Item</span> <span style="color: #dcaeea;">item</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">deleteAllItems</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">Money</span> <span style="color: #c678dd;">calculateTotalSum</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">startDelivery</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span><span style="color: #c678dd;">)</span>;
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+<div class="NOTES" id="org89596af">
+<p>
+Все методы принимают объект <code>Order</code>.
+</p>
+
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">interface</span> <span style="color: #ECBE7B;">ComputerFactory</span> <span style="color: #51afef;">{</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">Computer</span> <span style="color: #c678dd;">newServer</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Integer</span> <span style="color: #dcaeea;">ram</span>, <span style="color: #ECBE7B;">Integer</span> <span style="color: #dcaeea;">hdd</span>, <span style="color: #ECBE7B;">Integer</span> <span style="color: #dcaeea;">cpu</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">Computer</span> <span style="color: #c678dd;">newPc</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Monitor</span> <span style="color: #dcaeea;">monitor</span>, <span style="color: #ECBE7B;">Mouse</span> <span style="color: #dcaeea;">mouse</span>, <span style="color: #ECBE7B;">SystemUnit</span> <span style="color: #dcaeea;">unit</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">Computer</span> <span style="color: #c678dd;">newNotebook</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Model</span> <span style="color: #dcaeea;">model</span><span style="color: #c678dd;">)</span>;
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+<div class="NOTES" id="orgd3028a7">
+<p>
+Все методы возвращают объект <code>Computer</code>.
+</p>
+
+</div>
+<div class="NOTES" id="orgca7b243">
+<p>
+Подобные классы сосредоточены на операциях, которые можно произвести над сущностью или на разных способах как получить сущность. Их достаточно легко переиспользовать целиком в разных частях программы. Также примером сочетаемости по взаимодействию можно считать классы в ООП, так как они по определению представляют из себя набор данных и функций, которые с ними работают.
+</p>
+
+</div>
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">User</span> <span style="color: #51afef;">{</span>
+    <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">Long</span> <span style="color: #dcaeea;">id</span>;
+    <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">Image</span> <span style="color: #dcaeea;">avatar</span>;
+    <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">String</span> <span style="color: #dcaeea;">email</span>;
+    <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">List</span><span style="color: #c678dd;">&lt;</span><span style="color: #ECBE7B;">Orders</span><span style="color: #c678dd;">&gt;</span> <span style="color: #dcaeea;">orders</span>;
+    <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">List</span><span style="color: #c678dd;">&lt;</span><span style="color: #ECBE7B;">Review</span><span style="color: #c678dd;">&gt;</span> <span style="color: #dcaeea;">reviews</span>;
+
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">changeAvatar</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Image</span> <span style="color: #dcaeea;">image</span><span style="color: #c678dd;">)</span> <span style="color: #c678dd;">{</span> ... <span style="color: #c678dd;">}</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">resetPassword</span><span style="color: #c678dd;">()</span> <span style="color: #c678dd;">{</span> ... <span style="color: #c678dd;">}</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">placeNewOrder</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span><span style="color: #c678dd;">)</span> <span style="color: #c678dd;">{</span> ... <span style="color: #c678dd;">}</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">postReview</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Review</span> <span style="color: #dcaeea;">review</span><span style="color: #c678dd;">)</span> <span style="color: #c678dd;">{</span> ... <span style="color: #c678dd;">}</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">assignVipStatus</span><span style="color: #c678dd;">()</span> <span style="color: #c678dd;">{</span> ... <span style="color: #c678dd;">}</span>
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+<div class="NOTES" id="org869c09c">
+<p>
+Заметьте, что в приведенном примере у класса нет ни сеттеров, ни геттеров на каждое поле, их вообще в принципе не должно быть в ООП коде. Сеттеры подразумевают, что существует какой-то внешний, по отношению к классу код, который принимает решения на счет данных внутри этого класса, а это является нарушением принципа инкапсуляции.
+Несмотря на то, что все функции в классе <code>User</code> работают с одними и теми же данными, все же функционально их можно поделить на несколько областей: управление профилем пользователя, заказами и отзывами. Если в программе эти три области разделены на отдельные модули и имеют четкие границы, то не нужно боятся в каждом модуле сделать свой класс <code>User</code> с релевантным набором функций и данных, объединенных между собой только общим идентификатором.
+Не смотря на то, что физически пользователь один, в разных контекстах нас могут интерисовать разные его стороны. Не делая такое разделение мы увеличиваем связанность между модулями, которые используют общий класс <code>User</code>. При этом сам класс <code>User</code> становится сложным для понимания и тестирования из за своих размеров.
+</p>
+
+</div>
+
+<div id="org2d1dfe2" class="figure">
+<p><img src="./img/oop-at-home.png" alt="oop-at-home.png" />
+</p>
+</div>
+
+<div class="NOTES" id="orgbeefcc5">
+<p>
+Давайте рассмотрим как мы можем поделить <code>OrderService</code> согласно функциям, которые он реализует.
+Например, мы можем его поделить на класс, управляющий корзиной, калькулятор и класс отвечающий за доставку.
+</p>
+
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">interface</span> <span style="color: #ECBE7B;">OrderService</span> <span style="color: #51afef;">{</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">addItem</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span>, <span style="color: #ECBE7B;">Item</span> <span style="color: #dcaeea;">item</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">deleteAllItems</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">Money</span> <span style="color: #c678dd;">calculateTotalSum</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">startDelivery</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span><span style="color: #c678dd;">)</span>;
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">interface</span> <span style="color: #ECBE7B;">OrderCart</span> <span style="color: #51afef;">{</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">addItem</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span>, <span style="color: #ECBE7B;">Item</span> <span style="color: #dcaeea;">item</span><span style="color: #c678dd;">)</span>;
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">deleteAllItems</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span><span style="color: #c678dd;">)</span>;
+<span style="color: #51afef;">}</span>
+
+<span style="color: #51afef;">interface</span> <span style="color: #ECBE7B;">OrderCostCalculator</span> <span style="color: #51afef;">{</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">Money</span> <span style="color: #c678dd;">calculateTotalSum</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span><span style="color: #c678dd;">)</span>;
+<span style="color: #51afef;">}</span>
+
+<span style="color: #51afef;">interface</span> <span style="color: #ECBE7B;">OrderDelivery</span> <span style="color: #51afef;">{</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">void</span> <span style="color: #c678dd;">startDelivery</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Order</span> <span style="color: #dcaeea;">order</span><span style="color: #c678dd;">)</span>;
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+<div class="NOTES" id="orgb1f849c">
+<p>
+Обратите внимание, за счет этого разделения по функциональности имена наших классов стали более конкретными. И сами классы теперь сфокусированы на исполнение ровно одной функции.
+Надо заметить, что такое разделение имеет смысл только если каждый из новых классов используется отдельными потребителем. Иначе, если потребитель <code>OrderService</code> был только один, таким разделением мы только увеличим количество связей в сисеме.
+</p>
+
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-org976aa77" class="outline-2">
+<h2 id="org976aa77">Coupling &amp; OOP</h2>
+<div class="outline-text-2" id="text-org976aa77">
+<div class="NOTES" id="org5fe1b16">
+<p>
+
+</p>
+
+</div>
+</div>
+<div id="outline-container-org38cb0c7" class="outline-3">
+<h3 id="org38cb0c7">Subclass coupling</h3>
+<div class="outline-text-3" id="text-org38cb0c7">
+<p>
+Описывает отношения между родительским и дочерним классом.
+</p>
+<div class="NOTES" id="org085cd29">
+<p>
+Давайте проанализируем наследование относительно связанности. Под наследованием далее я подразумеваю расширение базового класса в Java через ключевое слово <code>extends</code>, имплементация интерфейсов это тема отдельного разговора.
+Наследование создает сильнейшую из возможных связей и использовать его стоит с большой осторожностью. Существует такое понятие, как &ldquo;Хрупкий базовый класс&rdquo;, это считается фундаментальной проблемой в ООП.
+</p>
+
+</div>
+</div>
+
+<div id="outline-container-org2913b2a" class="outline-4">
+<h4 id="org2913b2a">Fragile base class problem</h4>
+<div class="outline-text-4" id="text-org2913b2a">
+<div class="NOTES" id="orga7af5bc">
+<p>
+Проблема хрупкого базового класса заключается в том, что малейшие правки в деталях реализации базового класса могут привнести ошибку в производные классы. В худшем случае это приводит к тому, что любая успешная модификация базового класса требует предварительного изучения всего дерева наследования, и зачастую невозможна (без создания ошибок) даже в этом случае.
+В общем случае проблема не решаема, и является одним из существенных недостатков наследования в ООП.
+</p>
+
+</div>
+
+<div class="NOTES" id="org2e658d4">
+<p>
+Рассмотрим пример &ldquo;хрупкого&rdquo; базового класса. Мы хотим разработать коллекцию Set, которая бы могла быстро ответить, сколько элементов в нее добавлено. Предположим, что мы отнаследовались от HashSet и переопределили методы добавления элементов в коллекцию.
+</p>
+
+</div>
+
+<div class="LARGE_SRC" id="orgddd07f5">
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #51afef;">public</span> <span style="color: #51afef;">class</span> <span style="color: #ECBE7B;">CountingSet</span><span style="color: #51afef;">&lt;</span><span style="color: #ECBE7B;">E</span><span style="color: #51afef;">&gt;</span> <span style="color: #51afef;">extends</span> <span style="color: #ECBE7B;">HashSet</span><span style="color: #51afef;">&lt;</span><span style="color: #ECBE7B;">E</span><span style="color: #51afef;">&gt;</span> <span style="color: #51afef;">{</span>
+    <span style="color: #51afef;">private</span> <span style="color: #ECBE7B;">int</span> <span style="color: #dcaeea;">count</span>;
+
+    <span style="color: #a9a1e1;">@Override</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">boolean</span> <span style="color: #c678dd;">add</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">E</span> <span style="color: #dcaeea;">e</span><span style="color: #c678dd;">)</span> <span style="color: #c678dd;">{</span>
+        count++;
+        <span style="color: #51afef;">return</span> <span style="color: #51afef;">super</span>.add<span style="color: #98be65;">(</span>e<span style="color: #98be65;">)</span>;
+    <span style="color: #c678dd;">}</span>
+
+    <span style="color: #a9a1e1;">@Override</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">boolean</span> <span style="color: #c678dd;">addAll</span><span style="color: #c678dd;">(</span><span style="color: #ECBE7B;">Collection</span><span style="color: #98be65;">&lt;</span>? <span style="color: #51afef;">extends</span> <span style="color: #ECBE7B;">E</span><span style="color: #98be65;">&gt;</span> <span style="color: #dcaeea;">c</span><span style="color: #c678dd;">)</span> <span style="color: #c678dd;">{</span>
+        count += c.size<span style="color: #98be65;">()</span>;
+        <span style="color: #51afef;">return</span> <span style="color: #51afef;">super</span>.addAll<span style="color: #98be65;">(</span>c<span style="color: #98be65;">)</span>;
+    <span style="color: #c678dd;">}</span>
+
+    <span style="color: #a9a1e1;">@Override</span>
+    <span style="color: #51afef;">public</span> <span style="color: #ECBE7B;">int</span> <span style="color: #c678dd;">size</span><span style="color: #c678dd;">()</span> <span style="color: #c678dd;">{</span>
+        <span style="color: #51afef;">return</span> count;
+    <span style="color: #c678dd;">}</span>
+<span style="color: #51afef;">}</span>
+</pre>
+</div>
+
+</div>
+
+<div class="NOTES" id="orga59794e">
+<p>
+Что по вашему мнению выведет данный код:
+</p>
+
+</div>
+<div class="org-src-container">
+<pre class="src src-java">   <span style="color: #ECBE7B;">var</span> <span style="color: #dcaeea;">set</span> = <span style="color: #51afef;">new</span> <span style="color: #ECBE7B;">CountingSet</span><span style="color: #51afef;">&lt;</span><span style="color: #ECBE7B;">Integer</span><span style="color: #51afef;">&gt;()</span>;
+   set.addAll<span style="color: #51afef;">(</span>List.of<span style="color: #c678dd;">(</span><span style="color: #da8548; font-weight: bold;">42</span>, <span style="color: #da8548; font-weight: bold;">0</span>, <span style="color: #da8548; font-weight: bold;">12</span><span style="color: #c678dd;">)</span><span style="color: #51afef;">)</span>;
+   System.out.println<span style="color: #51afef;">(</span><span style="color: #98be65;">"Set size: "</span> + set.size<span style="color: #c678dd;">()</span><span style="color: #51afef;">)</span>;
+</pre>
+</div>
+
+<div class="NOTES" id="orga3d184b">
+<p>
+Правильный ответ: зависит от имплементации <code>addAll</code> у базового класса. Например, в данном случае вызовется метод <code>AbstractCollection.addAll</code>, который реализован через вызов метода <code>add(E e)</code> в цикле, но при этом будет вызываться наш, переопределенный метод <code>add</code> и соответственно счетчик будет увеличиваться два раза. Размер коллекции будет равен 6.
+Допустим, мы подстроимся под имплементацию и уберем наращивание счетчика из <code>addAll</code>. Теперь наш код работает правильно, но ровно до того момента, пока какой-нибудь класс в цепочке наследников между нашим <code>CountingSet&lt;E&gt;</code> и интерфейсом <code>Collection&lt;E&gt;</code> не задумается об оптимизации и не переопределит <code>addAll</code> убрав из него добавление элементов по одному через метод <code>add</code>. И наш класс снова работает неправильно.
+</p>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd60be32" class="outline-2">
+<h2 id="orgd60be32">Low coupling &amp; High cohesion</h2>
+<div class="outline-text-2" id="text-orgd60be32">
+<div class="NOTES" id="orgc639701">
+<p>
+Модули, которые следуют принципам слабой связаности и высокой сочетаемости, обладают следующими свойствами:
+</p>
+
+</div>
+<ul class="org-ul">
+<li>Изменения в одном модуле не влияют на остальные модули</li>
+<li>Проще разбираться в коде модуля, без необходимости изучать остальные модули</li>
+<li>Удобство в переиспользовании</li>
+</ul>
+<div class="NOTES" id="org3a40f57">
+<p>
+Coupling влияет на то, насколько просто нам поменять код, когда нам это нужно. Сколько мест нам нужно поменять и как будут эти изменения распространяться на остальную систему.
+Сильно связанные модули не обладают гибкость, их сложно переиспользовать в других местах и как следствие плохо поддаются тестированию.
+При изменении одного класса в сильно связанной программе часто необходимо внести изменения и в другие. В небольшой программе это не страшно, часто мы легко можем понять, что затронут наши изменения, шанс допустить ошибку невелик. Но с ростом приложения эти неявные взаимосвязи не всегда известны всем разработчикам и вероятность ошибки сильно возрастает.
+</p>
+
+<p>
+Cohesion влияет на то, как быстро мы можем понять где нам нужно поменять код. Как только находим одно место, которое необходимо поменять есть высокая вероятность, что рядом будут и остальные места, которые нужно изменить.
+Низкая сочетаемость означает, что код, который реализуют какую-то функцию или бизнес процесс в приложении размазан по всей кодовой базе. Из за этого тяжело понять, какой код относится к конкретному функционалу и приходится постоянно переключаться между модулями, для того чтобы построить в голове общую картину.
+</p>
+
+<p>
+Чтобы определить, на сколько ваш код соответствует принципам низкой связанности и высокой сочетаемости можно задать себе вопросы из книги Программист прагматик. Когда вы сталкиваетесь с проблемой, оцените, насколько локален процесс ее устранения. Нужно изменить лишь один модуль, или изменения должны происходить по всей системе? Когда вы меняете что-либо, устраняются ли при этом все ошибки или происходит загадочное появление новых?
+</p>
+
+</div>
+
+<div class="NOTES" id="org72a4d85">
+<p>
+Coupling и Cohision всегда упоминают в паре, и это не случайно. На практике это две силы, которые противоречат друг другу. То есть, чтобы создать максимально слабосвязанную систему можно просто поместить весь код в один файл. Нет модулей - нет связй между ними - нет проблем. Но при этом такой код будет обладать слабой сочетаемостью, так как код внутри файла будет решать функционально разные проблемы.
+С другой стороны, чтобы добиться максимального Cohesion нужно выделить каждую функцию в отдельный класс. Но в такой системе будет очень сильный Coupling между такими классами.
+</p>
+
+
+<p>
+Часто, когда разработчик пытается реализовать рекомендации по низкому coupling, высокому cohesion, он или она прикладывает слишком много усилий к реализации первой рекомендации (низкий coupling) и полностью забывает о другой. Это приводит к ситуации, когда код действительно разделен (decoupled), но в то же время не имеет четкой направленности. Его части настолько отделены друг от друга, что становится трудно или даже невозможно понять их значение. Эта ситуация называется деструктивной развязкой (destructive decoupling).
+</p>
+
+
+<p>
+Собственно задача программиста при написанни кода соблюдать баланс между этими двумя понятиями - связанность и сочетаемость.
+</p>
+
+</div>
+
+<blockquote>
+<p>
+Design is About Balancing Cohesion and Coupling (not blindly following principles) &#x2013; Copeland
+</p>
+</blockquote>
+</div>
+</div>
+</div>
+</body>
+</html>
